@@ -1,0 +1,80 @@
+packages:
+  base: !include common/base.yaml
+  base_global: !include common/base_global.yaml
+  
+substitutions:
+  device_name: energie-meter
+  device_name_short: energie-meter
+  friendly_name: "Energie Meter"
+  esp_type: "ESP32"
+  impulsfactor_water: "0.001"
+  impulsfactor_gas: "0.01"
+  update_interval: 60s
+  update_interval_sensor: 10s
+
+esphome:
+  name: ${device_name}
+  platform: ESP32
+  board: esp32dev
+  platformio_options: 
+    platform: espressif32
+    board: az-delivery-devkit-v4
+    board_build.mcu: esp32
+    board_build.f_cpu: 240000000L
+
+globals:
+  - id: total_pulses_gas
+    type: int
+    restore_value: false
+    initial_value: '0'
+  - id: total_pulses_water
+    type: int
+    restore_value: false
+    initial_value: '0'
+
+# This is mainly here because the internal_filter of the pulse_counter on ESP32
+# can only be set to a maximum of 13us, which is way too low. The TCRT5000
+# sometimes rapidly switches from ON to OFF, causing a lot of "ghost" pulses.
+# The delayed_on filter will make sure that the sensor stayed ON for at least
+# 100ms before increasing the counter.
+binary_sensor:
+  - platform: gpio
+    id: internal_pulse_counter_gas
+    pin: GPIO36
+    internal: true
+    filters:
+      - delayed_on: 100ms
+    on_press:
+      then:
+        - lambda: id(total_pulses_gas) += 1;
+  - platform: gpio
+    id: internal_pulse_counter_water
+    pin: GPIO13
+    internal: true
+    filters:
+      - delayed_on: 100ms
+    on_press:
+      then:
+        - lambda: id(total_pulses_water) += 1;
+
+sensor:
+  - platform: template
+    name: "Gas used"
+    device_class: gas
+    unit_of_measurement: "m³"
+    state_class: "total_increasing"
+    icon: "mdi:fire"
+    accuracy_decimals: 2
+    update_interval: ${update_interval_sensor}
+    lambda: |-
+        return id(total_pulses_gas) * ${impulsfactor_gas};
+  - platform: template
+    name: "Water used"
+    device_class: water
+    unit_of_measurement: "m³"
+    state_class: "total_increasing"
+    icon: "mdi:water"
+    accuracy_decimals: 3
+    update_interval: ${update_interval_sensor}
+    lambda: |-
+        return id(total_pulses_water) * ${impulsfactor_water};
