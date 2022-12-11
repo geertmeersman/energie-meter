@@ -1,0 +1,184 @@
+# ----------------------------------------------------------------
+# Global variables
+# ----------------------------------------------------------------
+globals:
+  - id: boot_counter
+    type: int
+    restore_value: yes
+    initial_value: "0"
+  - id: daily_value
+    type: float
+    restore_value: yes
+    initial_value: "0.0"
+  - id: hour_value
+    type: float
+    restore_value: yes
+    initial_value: "0.0"
+
+web_server:
+  port: 80
+  auth:
+    username: admin
+    password: !secret esphome_admin_password
+
+ota:
+  password: !secret esphome_admin_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: ${device_name_short} - FB
+    password: !secret esphome_admin_password
+
+captive_portal:
+
+logger:
+
+api:
+  password: !secret esphome_admin_password
+  id: espapi
+  reboot_timeout: 5min
+
+## ---------------------------------------------------
+## binary sensors
+## ---------------------------------------------------
+binary_sensor:
+  - platform: status
+    name: ${friendly_name} - Status
+
+## ---------------------------------------------------
+## switches
+## ---------------------------------------------------
+switch:
+  - platform: restart
+    id: restart_device
+    name: ${friendly_name} - Restart
+  - platform: template
+    name: ${friendly_name} - Reset boot counter
+    turn_on_action:
+      then:
+        - lambda: |-
+            id(boot_counter) = 0;
+            id(bootcounter).update();
+        - logger.log: ${device_name} reset boot counter o.k!
+
+## ---------------------------------------------------
+## all default sensors
+## ---------------------------------------------------
+sensor:
+
+  - platform: template
+    name: ${friendly_name} - Boot counter
+    id: bootcounter
+    accuracy_decimals: 0
+    lambda: |-
+      return (id(boot_counter));
+
+  - platform: uptime
+    name: ${friendly_name} - Uptime Sensor
+    id: uptime_sensor
+    icon: "mdi:clock-start"
+    update_interval: ${update_interval}
+    on_raw_value:
+      then:
+        - text_sensor.template.publish:
+            id: uptime_human
+            state: !lambda |-
+              int seconds = round(id(uptime_sensor).raw_state);
+              int days = seconds / (24 * 3600);
+              seconds = seconds % (24 * 3600);
+              int hours = seconds / 3600;
+              seconds = seconds % 3600;
+              int minutes = seconds /  60;
+              seconds = seconds % 60;
+              return (
+                (days ? String(days) + "d " : "") +
+                (hours ? String(hours) + "h " : "") +
+                (minutes ? String(minutes) + "m " : "") +
+                (String(seconds) + "s")
+              ).c_str();
+
+  - platform: wifi_signal
+    id: wifisignal
+    name: ${friendly_name} - WiFi Signal
+    update_interval: 60s
+
+  - platform: template
+    id: sensor_wifi_signal_percentage
+    name: "${friendly_name} - WiFi Signal Percentage"
+    icon: "mdi:wifi"
+    unit_of_measurement: "%"
+    update_interval: 60s
+    accuracy_decimals: 0
+    lambda: |-
+        if (id(wifisignal).state < -92.0)
+          return 100.0;
+        if (id(wifisignal).state > -21.0)
+          return 1.0;
+        else
+          return round(( -0.0154 * id(wifisignal).state * id(wifisignal).state ) - ( 0.3794 * id(wifisignal).state ) + 98.182 );
+
+
+## ---------------------------------------------------
+## all text sensors
+## ---------------------------------------------------
+text_sensor:
+  - platform: version
+    name: ${friendly_name} - Esphome Version
+    id: appver
+
+  - platform: template
+    name: ${friendly_name} - Uptime
+    id: uptime_human
+    icon: mdi:clock-start
+
+  - platform: wifi_info
+    ip_address:
+      name: ${friendly_name} - IP
+      id: wifiip
+      icon: mdi:ip-network
+
+    ssid:
+      name: ${friendly_name} - SSID
+      id: wifiip_ssid
+      icon: mdi:wifi
+
+    bssid:
+      name: ${friendly_name} - BSSID
+      id: wifiip_bssid
+      icon: mdi:wifi
+
+    mac_address:
+      name: ${friendly_name} - Mac Wifi Address
+      id: wifimac_address
+      icon: mdi:wifi
+
+  - platform: template
+    name: ${friendly_name} - Timestamp
+    id: systime
+    lambda: char str[20];
+      time_t currTime = id(sntp_time).now().timestamp;
+      strftime(str, sizeof(str), "%Y-%m-%dT%H:%M:%S", localtime(&currTime));
+      return (std::string) str;
+  - platform: template
+    name:  ${friendly_name} - Uptime (formatted)
+    lambda: |-
+      int seconds = (id(uptime_sensor).state);
+      int days = seconds / (24 * 3600);
+      seconds = seconds % (24 * 3600);
+      int hours = seconds / 3600;
+      seconds = seconds % 3600;
+      int minutes = seconds /  60;
+      seconds = seconds % 60;
+      if ( days ) {
+        return { (String(days) +"d " + String(hours) +"h " + String(minutes) +"m "+ String(seconds) +"s").c_str() };
+      } else if ( hours ) {
+        return { (String(hours) +"h " + String(minutes) +"m "+ String(seconds) +"s").c_str() };
+      } else if ( minutes ) {
+        return { (String(minutes) +"m "+ String(seconds) +"s").c_str() };
+      } else {
+        return { (String(seconds) +"s").c_str() };
+      }
+    icon: mdi:clock-start
+    update_interval: 15s
