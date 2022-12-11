@@ -32,11 +32,6 @@ globals:
     restore_value: false
     initial_value: '0'
 
-# This is mainly here because the internal_filter of the pulse_counter on ESP32
-# can only be set to a maximum of 13us, which is way too low. The TCRT5000
-# sometimes rapidly switches from ON to OFF, causing a lot of "ghost" pulses.
-# The delayed_on filter will make sure that the sensor stayed ON for at least
-# 100ms before increasing the counter.
 binary_sensor:
   - platform: gpio
     id: internal_pulse_counter_gas
