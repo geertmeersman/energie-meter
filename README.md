@@ -1,4 +1,4 @@
-# Build a cheap water and gas usage sensor using ESPhome, a proximity sensor and a TCRT5000 Infrared Reflective Sensor
+# Build a cheap water and gas usage sensor using ESPhome, a proximity sensor and a TCRT5000 Infrared Reflective Sensor and integrate it into Home Assistant
 
 In this project I share a walkthrough on how you can build a water and gas usage meter using ESPHome that integrates with your Home Assistant.
 
@@ -51,3 +51,50 @@ A  -- D0 --> D(GPIO36 pin)
 
 # ESPHome
 The code I have added will make your sensors available for integration into [Home Assistant](https://www.home-assistant.io/)
+
+>* energy-meter.yaml : the main sensor configuration<br>
+>* common/base.yaml : time configuration<br>
+>* common/base_global.yaml : some other global esphome code I use for all my devices
+
+# Home Assistant
+1. In your configuration.yaml file, add the following:
+```
+utility_meter:
+  water:
+    source: sensor.water_used
+  util_water_usage_quarter_hourly:
+    source: sensor.water_used
+    cycle: quarter-hourly
+  util_water_usage_hourly:
+    source: sensor.water_used
+    cycle: hourly
+  util_water_usage_daily:
+    source: sensor.water_used
+    cycle: daily
+  util_water_usage_monthly:
+    source: sensor.water_used
+    cycle: monthly
+  util_water_usage_yearly:
+    source: sensor.water_used
+    cycle: yearly
+  gas:
+    source: sensor.gas_used
+  util_gas_usage_quarter_hourly:
+    source: sensor.gas_used
+    cycle: quarter-hourly
+  util_gas_usage_hourly:
+    source: sensor.gas_used
+    cycle: hourly
+  util_gas_usage_daily:
+    source: sensor.gas_used
+    cycle: daily
+  util_gas_usage_monthly:
+    source: sensor.gas_used
+    cycle: monthly
+  util_gas_usage_yearly:
+    source: sensor.gas_used
+    cycle: yearly
+```
+2. Reboot Home Assistant
+3. Go to your Settings > Dashboards > Energy
+4. 
