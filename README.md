@@ -97,4 +97,33 @@ utility_meter:
 ```
 2. Reboot Home Assistant
 3. Go to your Settings > Dashboards > Energy
-4. 
+4. Add your gas and water sensor to the dashbaord
+   * sensor.water_used
+   * sensor.gas_used<br>
+![HA-energy.png!](/.resources/HA-energy.png "HA energy")
+5. Give Home Assistant a couple of hours and it will show you the data in the Energy Dashboard
+
+## Calibrate the meters
+As we have added the gas and water meter in the Utility Meters, we can also set their display values.<br>
+This can be done by calling the calibrate service:<br>
+![HA-calibrate.png!](/.resources/HA-calibrate.png "HA-calibrate.png")
+
+This will show the meter values in HA as they are on your physical meters!<br>
+![HA-cards.png!](/.resources/HA-cards.png "HA-cards.png")<br>
+```
+type: vertical-stack
+cards:
+  - square: false
+    columns: 2
+    type: grid
+    cards:
+      - type: entity
+        entity: sensor.gas
+      - type: entity
+        entity: sensor.water
+  - type: energy-date-selection
+  - type: energy-gas-graph
+    title: Gas
+  - type: energy-water-graph
+    title: Water
+```
