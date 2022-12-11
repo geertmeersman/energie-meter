@@ -1,0 +1,27 @@
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: Europe/Brussels
+    servers:
+      - 0.at.pool.ntp.org
+      - 0.pool.ntp.org
+      - 1.pool.ntp.org
+    on_time:
+      - seconds: 0
+        minutes: 0
+        hours: 0
+        then:
+          - lambda: |-
+              if(id(daily_value)){
+                 id(daily_value)=0.00;
+              }
+      - seconds: 0
+        minutes: 0
+        then:
+          - lambda: |-
+              if(id(hour_value)){
+                 id(hour_value)=0.00;
+              }
+    on_time_sync:
+      then:
+        - logger.log: "Synchronized sntp clock"
