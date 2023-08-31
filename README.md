@@ -14,6 +14,8 @@ The implemenation I went for was a proximity sensor [LJ18A3-8-Z/BX-5V](https://n
 
 1 spin of the wheel will result in a pulse, every pulse being equal to what has been defined by your meter.
 
+Note: make sure to position the sensor a bit on the side of the wheel, so it only covers half the wheel. This ensures it measures the pulses. If you cover it completely, it will always detect the wheel and won't register any pulses. You can easily test it when you let some water flow and see the sensor light blinking.
+
 ![Proximity sensor on meter!](/.resources/proximity-sensor-on-meter.png "Proximity sensor on the meter")
 
 ## How to read an analog gas meter?
