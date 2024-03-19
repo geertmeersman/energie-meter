@@ -2,6 +2,9 @@
 
 In this project I share a walkthrough on how you can build a water and gas usage meter using ESPHome that integrates with your Home Assistant.
 
+[![maintainer](https://img.shields.io/badge/maintainer-Geert%20Meersman-green?style=for-the-badge&logo=github)](https://github.com/geertmeersman)
+[![buyme_coffee](https://img.shields.io/badge/Buy%20me%20an%20Omer-donate-yellow?style=for-the-badge&logo=buymeacoffee)](https://www.buymeacoffee.com/geertmeersman)
+
 ## How to read an analog water meter?
 I live in Belgium and the water meter I have is a Sensus 520 which has a small spinning wheel with a metal plate.
 
